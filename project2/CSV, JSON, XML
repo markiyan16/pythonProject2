@@ -1,0 +1,94 @@
+import csv
+import json
+import xml.etree.ElementTree as ET
+import pickle
+import os
+import zipfile
+
+class RegionalCenter:
+    def __init__(self, name, population, area, foundation_year):
+        self.name = name
+        self.population = population
+        self.area = area
+        self.foundation_year = foundation_year
+
+def save_to_csv(data, filename):
+    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+        fieldnames = ['Name', 'Population', 'Area', 'Foundation Year']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+        writer.writeheader()
+        for center in data:
+            writer.writerow({'Name': center.name, 'Population': center.population, 'Area': center.area, 'Foundation Year': center.foundation_year})
+
+def save_to_json(data, filename):
+    with open(filename, 'w', encoding='utf-8') as jsonfile:
+        json.dump([vars(center) for center in data], jsonfile, ensure_ascii=False, indent=2)
+
+def save_to_xml(data, filename):
+    root = ET.Element('RegionalCenters')
+    for center in data:
+        center_element = ET.SubElement(root, 'RegionalCenter')
+        for key, value in vars(center).items():
+            ET.SubElement(center_element, key).text = str(value)
+
+    tree = ET.ElementTree(root)
+    tree.write(filename, encoding='utf-8', xml_declaration=True)
+
+def save_to_pickle(data, filename):
+    with open(filename, 'wb') as picklefile:
+        pickle.dump(data, picklefile)
+
+def load_data(filename, default=[]):
+    if os.path.exists(filename):
+        with open(filename, 'rb') as file:
+            return pickle.load(file)
+    return default
+
+def main():
+    filename = input("Введіть ім'я файлу (без розширення): ")
+
+    data = load_data(f'{filename}.pickle')
+
+    while True:
+        print("Оберіть формат файлу:")
+        print("1. CSV")
+        print("2. JSON")
+        print("3. XML")
+        print("4. Pickle")
+        choice = input("Ваш вибір: ")
+
+        if choice == '1':
+            save_to_csv(data, f'{filename}.csv')
+        elif choice == '2':
+            save_to_json(data, f'{filename}.json')
+        elif choice == '3':
+            save_to_xml(data, f'{filename}.xml')
+        elif choice == '4':
+            save_to_pickle(data, f'{filename}.pickle')
+        else:
+            print("Некоректний вибір. Спробуйте ще раз.")
+            continue
+
+        with zipfile.ZipFile(f'{filename}.zip', 'w') as archive:
+            archive.write(f'{filename}.{choice}')
+
+        print(f"Файл збережено як {filename}.{choice}.zip")
+
+        print("Вміст файлу:")
+        print(data)
+
+        add_new = input("Бажаєте додати новий обласний центр? (Так/Ні): ").lower()
+        if add_new != 'так':
+            break
+
+        name = input("Назва обласного центру: ")
+        population = input("Населення: ")
+        area = input("Площа: ")
+        foundation_year = input("Рік заснування: ")
+
+        new_center = RegionalCenter(name, population, area, foundation_year)
+        data.append(new_center)
+
+if __name__ == "__main__":
+    main()

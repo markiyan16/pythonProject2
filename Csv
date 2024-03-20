@@ -1,0 +1,35 @@
+import csv
+
+def read_and_display_csv(file_path):
+    with open(file_path, 'r', newline='', encoding='utf-8') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            print_info(row)
+            add_new_city(file_path)
+
+def print_info(city_info):
+    print(f"Місто: {city_info['Місто']}")
+    print(f"Населення: {city_info['Населення']}")
+    print(f"Площа: {city_info['Площа']}")
+    print(f"Рік заснування: {city_info['Рік_заснування']}")
+    print()
+
+def add_new_city(file_path):
+    response = input("Чи бажаєте додати новий обласний центр? (Так/Ні): ").lower()
+    if response == 'так':
+        city_info = get_new_city_info()
+        with open(file_path, 'a', newline='', encoding='utf-8') as file:
+            writer = csv.DictWriter(file, fieldnames=['Місто', 'Населення', 'Площа', 'Рік_заснування'])
+            writer.writerow(city_info)
+
+def get_new_city_info():
+    city = input("Введіть нове місто: ")
+    population = input("Введіть населення: ")
+    area = input("Введіть площу: ")
+    year_founded = input("Введіть рік заснування: ")
+
+    return {'Місто': city, 'Населення': population, 'Площа': area, 'Рік_заснування': year_founded}
+
+if __name__ == "__main__":
+    csv_file_path = "cities.csv"
+    read_and_display_csv(csv_file_path)
